@@ -28,14 +28,14 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomeScreen />} />
+        <Route path="/" element={<HomeScreen startQuiz={startQuiz} />} />
         <Route
           path="/quiz"
-          element={<QuizPage questions={questions} setScore={setScore} />}
+          element={<QuizPage questions={quizQuestions} setScore={setScore} />}
         />
         <Route
           path="/results"
-          element={<ResultsPage score={score} total={questions.length} />}
+          element={<ResultsPage score={score} total={quizQuestions.length} />}
         />
       </Routes>
     </Router>

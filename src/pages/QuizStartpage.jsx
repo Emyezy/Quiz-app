@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 export default function QuizStartPage({ onStart }) {
+  console.log("✅ QuizStartPage rendered");
   const [category, setCategory] = useState(null);
 
   return (

@@ -1,45 +1,68 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState } from "react";
 import HomeScreen from "./pages/HomeScreen";
+import QuizStartPage from "./pages/QuizStartpage";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
-import nigeriaQuestions from "./data/questions";
-import { fetchTriviaQuestions } from "./services/triviaApi";
-import { shuffleArray } from "./utils/shuffle";
-import "./styles/App.css";
+import { fallbackQuestions } from "./data/fallbackQuestions";
 
-function App() {
+export default function App() {
+  const [stage, setStage] = useState("home"); // home | start | quiz | results
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState([]);
   const [score, setScore] = useState(0);
 
-  useEffect(() => {
-    const loadQuestions = async () => {
-      try {
-        const trivia = await fetchTriviaQuestions(10); // fetch 10 random questions
-        const allQuestions = [...nigeriaQuestions, ...trivia];
-        setQuestions(shuffleArray(allQuestions));
-      } catch (err) {
-        console.error("Error loading questions:", err);
-      }
-    };
-    loadQuestions();
-  }, []);
+  // // ✅ handles button in HomeScreen
+  const handleStart = () => {
+    console.log("✅ Start button clicked");
+    setStage("start");
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+
+    // fallback for now
+    const filtered =
+      category && category !== "Random (any category)"
+        ? fallbackQuestions.filter((q) => q.category === category)
+        : fallbackQuestions;
+
+    const selected = filtered.sort(() => Math.random() - 0.5).slice(0, 10);
+    setQuestions(selected);
+
+    setStage("quiz");
+  };
+
+  const handleRestart = () => {
+    setStage("home");
+    setSelectedCategory(null);
+    setQuestions([]);
+    setAnswers([]);
+    setScore(0);
+  };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomeScreen startQuiz={startQuiz} />} />
-        <Route
-          path="/quiz"
-          element={<QuizPage questions={quizQuestions} setScore={setScore} />}
+    <>
+      {stage === "home" && <HomeScreen onStart={handleStart} />}
+      {stage === "start" && <QuizStartPage onStart={handleCategorySelect} />}
+      {stage === "quiz" && (
+        <QuizPage
+          questions={questions}
+          onFinish={(s, total, ans) => {
+            setScore(s);
+            setAnswers(ans);
+            setStage("results");
+          }}
         />
-        <Route
-          path="/results"
-          element={<ResultsPage score={score} total={quizQuestions.length} />}
+      )}
+      {stage === "results" && (
+        <ResultsPage
+          score={score}
+          total={questions.length}
+          answers={answers}
+          onRestart={handleRestart}
         />
-      </Routes>
-    </Router>
+      )}
+    </>
   );
 }
-
-export default App;

@@ -3,38 +3,27 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomeScreen from "./pages/HomeScreen";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
+import { getFallbackQuestions } from "./utils/fallbackquestions"; // ✅ correct import
 
 function App() {
-  const [questions, setQuestions] = useState([]); // all 100 fetched
+  const [questions, setQuestions] = useState([]); // all questions
   const [quizQuestions, setQuizQuestions] = useState([]); // current session
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true); // track loading
 
   useEffect(() => {
     setLoading(true);
+
+    // ❌ API fetch disabled for now
+    /*
     fetch("https://opentdb.com/api.php?amount=20&type=multiple")
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched questions:", data); // 👀 Debugging
+        console.log("Fetched questions:", data);
 
         if (data.response_code !== 0 || !data.results.length) {
           console.warn("No questions from API, using fallback.");
-          setQuestions([
-            {
-              question: "What is the capital of Nigeria?",
-              correct_answer: "Abuja",
-              incorrect_answers: ["Lagos", "Kano", "Port Harcourt"],
-            },
-            {
-              question: "Who is the current President of Nigeria (2025)?",
-              correct_answer: "Bola Ahmed Tinubu",
-              incorrect_answers: [
-                "Muhammadu Buhari",
-                "Goodluck Jonathan",
-                "Atiku Abubakar",
-              ],
-            },
-          ]);
+          getFallbackQuestions(100).then(setQuestions);
         } else {
           setQuestions(data.results);
         }
@@ -45,12 +34,19 @@ function App() {
         console.error("Error fetching questions:", error);
         setLoading(false);
       });
+    */
+
+    // ✅ Always use local fallback for now
+    getFallbackQuestions(100).then((qs) => {
+      setQuestions(qs);
+      setLoading(false);
+    });
   }, []);
 
   function getRandomQuestions(allQuestions, num) {
-    if (!Array.isArray(allQuestions)) return []; // safety check
+    if (!Array.isArray(allQuestions)) return [];
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, num);
+    return shuffled.slice(0, Math.min(num, shuffled.length));
   }
 
   function startQuiz() {
@@ -58,7 +54,7 @@ function App() {
       alert("Questions are still loading, please wait...");
       return;
     }
-    setQuizQuestions(getRandomQuestions(questions, 10));
+    setQuizQuestions(getRandomQuestions(questions, 10)); // ✅ always 10 unique questions
     setScore(0);
   }
 

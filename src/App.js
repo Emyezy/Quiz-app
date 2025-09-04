@@ -1,52 +1,36 @@
+// App.js
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import HomeScreen from "./pages/HomeScreen";
 import QuizPage from "./pages/QuizPage";
 import ResultsPage from "./pages/ResultsPage";
-import { getFallbackQuestions } from "./utils/fallbackquestions"; // ✅ correct import
+import { getFallbackQuestions } from "./utils/fallbackquestions";
 
 function App() {
   const [questions, setQuestions] = useState([]); // all questions
   const [quizQuestions, setQuizQuestions] = useState([]); // current session
   const [score, setScore] = useState(0);
-  const [loading, setLoading] = useState(true); // track loading
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-
-    // ❌ API fetch disabled for now
-    /*
-    fetch("https://opentdb.com/api.php?amount=20&type=multiple")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched questions:", data);
-
-        if (data.response_code !== 0 || !data.results.length) {
-          console.warn("No questions from API, using fallback.");
-          getFallbackQuestions(100).then(setQuestions);
-        } else {
-          setQuestions(data.results);
-        }
-
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching questions:", error);
-        setLoading(false);
-      });
-    */
-
-    // ✅ Always use local fallback for now
-    getFallbackQuestions(100).then((qs) => {
+    async function load() {
+      setLoading(true);
+      const qs = await getFallbackQuestions(100); // load pool
       setQuestions(qs);
       setLoading(false);
-    });
+    }
+    load();
   }, []);
 
   function getRandomQuestions(allQuestions, num) {
     if (!Array.isArray(allQuestions)) return [];
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, Math.min(num, shuffled.length));
+    return shuffled.slice(0, num);
   }
 
   function startQuiz() {
@@ -54,7 +38,12 @@ function App() {
       alert("Questions are still loading, please wait...");
       return;
     }
-    setQuizQuestions(getRandomQuestions(questions, 10)); // ✅ always 10 unique questions
+    setQuizQuestions(getRandomQuestions(questions, 10));
+    setScore(0);
+  }
+
+  function restartQuiz() {
+    setQuizQuestions([]);
     setScore(0);
   }
 
@@ -71,7 +60,13 @@ function App() {
         />
         <Route
           path="/results"
-          element={<ResultsPage score={score} total={quizQuestions.length} />}
+          element={
+            <ResultsPage
+              score={score}
+              total={quizQuestions.length}
+              restartQuiz={restartQuiz}
+            />
+          }
         />
       </Routes>
     </Router>

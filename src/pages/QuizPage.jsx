@@ -1,63 +1,99 @@
-import React, { useState } from "react";
+// src/pages/QuizPage.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function QuizPage({ questions, onFinish }) {
-  const [current, setCurrent] = useState(0);
-  const [score, setScore] = useState(0);
-  const [answers, setAnswers] = useState([]);
+export default function QuizPage({ questions, setScore }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(60); // 1 minute = 60s
+  const navigate = useNavigate();
 
-  const handleAnswer = (chosenAnswer, isCorrect) => {
-    const newAnswer = {
-      question: questions[current].question,
-      chosenAnswer,
-      correctAnswer: questions[current].correct_answer,
-      isCorrect,
-    };
-
-    setAnswers((prev) => [...prev, newAnswer]);
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
+  // Countdown Timer
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      finishQuiz();
+      return;
     }
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
-    if (current + 1 < questions.length) {
-      setCurrent((prev) => prev + 1);
-    } else {
-      // quiz finished → send results with all answers
-      onFinish(score + (isCorrect ? 1 : 0), questions.length, [
-        ...answers,
-        newAnswer,
-      ]);
+  function handleAnswer(answer) {
+    setSelectedAnswers({ ...selectedAnswers, [currentIndex]: answer });
+  }
+
+  function nextQuestion() {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     }
-  };
+  }
 
-  const q = questions[current];
+  function prevQuestion() {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  }
 
-  // Combine correct + incorrect answers, then shuffle
-  const answersList = [...q.incorrect_answers, q.correct_answer].sort(
-    () => Math.random() - 0.5
-  );
+  function finishQuiz() {
+    let score = 0;
+    questions.forEach((q, i) => {
+      if (selectedAnswers[i] === q.correct_answer) score++;
+    });
+    setScore(score);
+    navigate("/results");
+  }
+
+  if (!questions || questions.length === 0) {
+    return <p>Loading questions...</p>;
+  }
+
+  const currentQuestion = questions[currentIndex];
+  const allAnswers = [
+    ...currentQuestion.incorrect_answers,
+    currentQuestion.correct_answer,
+  ].sort(() => Math.random() - 0.5);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">
-        Question {current + 1} of {questions.length}
-      </h2>
+    <div>
+      <h2>{currentQuestion.question}</h2>
 
-      <p
-        className="mb-6 text-lg"
-        dangerouslySetInnerHTML={{ __html: q.question }}
-      />
-
-      <div className="space-y-3">
-        {answersList.map((a, idx) => (
+      <div>
+        {allAnswers.map((answer, idx) => (
           <button
             key={idx}
-            onClick={() => handleAnswer(a, a === q.correct_answer)}
-            className="block w-full text-left bg-blue-100 hover:bg-blue-300 px-4 py-2 rounded-lg shadow"
-            dangerouslySetInnerHTML={{ __html: a }}
-          />
+            onClick={() => handleAnswer(answer)}
+            style={{
+              background:
+                selectedAnswers[currentIndex] === answer
+                  ? "#d1e7dd"
+                  : "#f8f9fa",
+              margin: "5px",
+              padding: "10px",
+              border: "1px solid #ccc",
+            }}
+          >
+            {answer}
+          </button>
         ))}
       </div>
+
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={prevQuestion} disabled={currentIndex === 0}>
+          Previous
+        </button>
+        {currentIndex < questions.length - 1 ? (
+          <button onClick={nextQuestion}>Next</button>
+        ) : (
+          <button onClick={finishQuiz}>Finish</button>
+        )}
+      </div>
+
+      {/* Countdown Timer */}
+      <p style={{ marginTop: "15px", fontWeight: "bold" }}>
+        Time Left: {timeLeft}s
+      </p>
     </div>
   );
 }

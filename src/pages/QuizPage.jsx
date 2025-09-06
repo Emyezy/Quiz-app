@@ -1,14 +1,14 @@
 // src/pages/QuizPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function QuizPage({ questions, setScore }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minute = 60s
+  const [timeLeft, setTimeLeft] = useState(60); // 1 minute countdown
   const navigate = useNavigate();
 
-  // Countdown Timer
+  // Countdown Timer (runs once per second)
   useEffect(() => {
     if (timeLeft <= 0) {
       finishQuiz();
@@ -20,10 +20,12 @@ export default function QuizPage({ questions, setScore }) {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  // Handle selecting an answer
   function handleAnswer(answer) {
     setSelectedAnswers({ ...selectedAnswers, [currentIndex]: answer });
   }
 
+  // Navigation
   function nextQuestion() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -36,6 +38,7 @@ export default function QuizPage({ questions, setScore }) {
     }
   }
 
+  // Finish quiz and calculate score
   function finishQuiz() {
     let score = 0;
     questions.forEach((q, i) => {
@@ -45,20 +48,28 @@ export default function QuizPage({ questions, setScore }) {
     navigate("/results");
   }
 
+  // If no questions available
   if (!questions || questions.length === 0) {
     return <p>Loading questions...</p>;
   }
 
   const currentQuestion = questions[currentIndex];
-  const allAnswers = [
-    ...currentQuestion.incorrect_answers,
-    currentQuestion.correct_answer,
-  ].sort(() => Math.random() - 0.5);
+
+  // ✅ Shuffle answers ONCE per question (not every render)
+  const allAnswers = useMemo(() => {
+    const arr = [
+      ...currentQuestion.incorrect_answers,
+      currentQuestion.correct_answer,
+    ];
+    return arr.sort(() => Math.random() - 0.5);
+  }, [currentQuestion]);
 
   return (
     <div>
-      <h2>{currentQuestion.question}</h2>
+      {/* Question Text */}
+      <h2 style={{ marginBottom: "15px" }}>{currentQuestion.question}</h2>
 
+      {/* Answer Buttons */}
       <div>
         {allAnswers.map((answer, idx) => (
           <button
@@ -72,6 +83,7 @@ export default function QuizPage({ questions, setScore }) {
               margin: "5px",
               padding: "10px",
               border: "1px solid #ccc",
+              cursor: "pointer",
             }}
           >
             {answer}
@@ -79,6 +91,7 @@ export default function QuizPage({ questions, setScore }) {
         ))}
       </div>
 
+      {/* Navigation Buttons */}
       <div style={{ marginTop: "20px" }}>
         <button onClick={prevQuestion} disabled={currentIndex === 0}>
           Previous

@@ -8,6 +8,7 @@ function loadUsedIds() {
     return new Set();
   }
 }
+
 function saveUsedIds(set) {
   localStorage.setItem(LS_KEY, JSON.stringify([...set]));
 }
@@ -24,25 +25,35 @@ function shuffle(arr) {
 /**
  * Get fallback questions.
  * @param {number} n - Number of questions.
- * @param {string|null} category - e.g., "Science", "General Knowledge", "Nigeria History".
- *                                 Pass null for any category.
+ * @param {string|null} category - Optional category filter.
  */
 export async function getFallbackQuestions(n = 10, category = null) {
-  const res = await fetch("/fallback_questions.json");
-  const all = await res.json();
+  try {
+    const res = await fetch("/fallback_questions.json");
+    const all = await res.json();
 
-  // filter by category if given
-  let filtered = category ? all.filter((q) => q.category === category) : all;
+    // Filter by category if provided
+    let filtered = category ? all.filter((q) => q.category === category) : all;
 
-  const used = loadUsedIds();
-  const available = filtered.filter((q) => !used.has(q.id));
+    const used = loadUsedIds();
+    let available = filtered.filter((q) => !used.has(q.id));
 
-  const picked = shuffle(available).slice(0, n);
+    // If we don’t have enough questions left, reset
+    if (available.length < n) {
+      localStorage.removeItem(LS_KEY);
+      available = filtered;
+    }
 
-  picked.forEach((q) => used.add(q.id));
-  saveUsedIds(used);
+    const picked = shuffle(available).slice(0, n);
 
-  return picked;
+    picked.forEach((q) => used.add(q.id));
+    saveUsedIds(used);
+
+    return picked;
+  } catch (err) {
+    console.error("Error loading fallback questions:", err);
+    return []; // fallback safe return
+  }
 }
 
 export function resetFallbackProgress() {

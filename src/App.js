@@ -72,6 +72,13 @@ function App() {
     setScore(0);
   }
 
+  // inside App.js
+
+  function restartQuiz() {
+    setQuizQuestions([]); // clear old session
+    setScore(0);
+  }
+
   return (
     <Router>
       <Routes>
@@ -85,7 +92,13 @@ function App() {
         />
         <Route
           path="/results"
-          element={<ResultsPage score={score} total={quizQuestions.length} />}
+          element={
+            <ResultsPage
+              score={score}
+              total={quizQuestions.length}
+              restartQuiz={restartQuiz}
+            />
+          }
         />
       </Routes>
     </Router>

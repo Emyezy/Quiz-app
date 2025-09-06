@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 export default function ResultsPage({ score, total, restartQuiz }) {
   const navigate = useNavigate();
 
-  const handleRestart = () => {
-    restartQuiz();
-    navigate("/"); // back to home
-  };
+  function handleRestart() {
+    restartQuiz(); // ✅ reset state in App.js
+    navigate("/"); // ✅ go back to home
+  }
 
   return (
     <div>

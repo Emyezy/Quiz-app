@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 export default function QuizPage({ questions, setScore }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minute countdown
+  const [timeLeft, setTimeLeft] = useState(60); // 1 minute = 60s
   const navigate = useNavigate();
 
-  // Countdown Timer (runs once per second)
+  // Countdown Timer
   useEffect(() => {
     if (timeLeft <= 0) {
       finishQuiz();
@@ -20,12 +20,10 @@ export default function QuizPage({ questions, setScore }) {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // Handle selecting an answer
   function handleAnswer(answer) {
     setSelectedAnswers({ ...selectedAnswers, [currentIndex]: answer });
   }
 
-  // Navigation
   function nextQuestion() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -38,7 +36,6 @@ export default function QuizPage({ questions, setScore }) {
     }
   }
 
-  // Finish quiz and calculate score
   function finishQuiz() {
     let score = 0;
     questions.forEach((q, i) => {
@@ -48,43 +45,40 @@ export default function QuizPage({ questions, setScore }) {
     navigate("/results");
   }
 
-  // If no questions available
-  if (!questions || questions.length === 0) {
-    return <p>Loading questions...</p>;
-  }
+  // ✅ FIX: Always declare hooks first
+  const currentQuestion =
+    questions && questions.length > 0 ? questions[currentIndex] : null;
 
-  const currentQuestion = questions[currentIndex];
-
-  // ✅ Shuffle answers ONCE per question (not every render)
   const allAnswers = useMemo(() => {
-    const arr = [
+    if (!currentQuestion) return [];
+    return [
       ...currentQuestion.incorrect_answers,
       currentQuestion.correct_answer,
-    ];
-    return arr.sort(() => Math.random() - 0.5);
+    ].sort(() => Math.random() - 0.5);
   }, [currentQuestion]);
 
-  return (
-    <div>
-      {/* Question Text */}
-      <h2 style={{ marginBottom: "15px" }}>{currentQuestion.question}</h2>
+  if (!currentQuestion) {
+    return <p className="text-center text-gray-300">Loading questions...</p>;
+  }
 
-      {/* Answer Buttons */}
-      <div>
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white px-4">
+      {/* Question */}
+      <h2 className="text-xl md:text-2xl font-semibold mb-6 text-center">
+        {currentQuestion.question}
+      </h2>
+
+      {/* Answer Options */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl">
         {allAnswers.map((answer, idx) => (
           <button
             key={idx}
             onClick={() => handleAnswer(answer)}
-            style={{
-              background:
-                selectedAnswers[currentIndex] === answer
-                  ? "#d1e7dd"
-                  : "#f8f9fa",
-              margin: "5px",
-              padding: "10px",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-            }}
+            className={`px-4 py-3 rounded-lg border transition-colors duration-300 ${
+              selectedAnswers[currentIndex] === answer
+                ? "bg-green-600 border-green-400 text-white"
+                : "bg-gray-800 hover:bg-gray-700 border border-gray-600"
+            }`}
           >
             {answer}
           </button>
@@ -92,20 +86,34 @@ export default function QuizPage({ questions, setScore }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div style={{ marginTop: "20px" }}>
-        <button onClick={prevQuestion} disabled={currentIndex === 0}>
+      <div className="flex justify-between items-center w-full max-w-xl mt-6">
+        <button
+          onClick={prevQuestion}
+          disabled={currentIndex === 0}
+          className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+        >
           Previous
         </button>
         {currentIndex < questions.length - 1 ? (
-          <button onClick={nextQuestion}>Next</button>
+          <button
+            onClick={nextQuestion}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500"
+          >
+            Next
+          </button>
         ) : (
-          <button onClick={finishQuiz}>Finish</button>
+          <button
+            onClick={finishQuiz}
+            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500"
+          >
+            Finish
+          </button>
         )}
       </div>
 
       {/* Countdown Timer */}
-      <p style={{ marginTop: "15px", fontWeight: "bold" }}>
-        Time Left: {timeLeft}s
+      <p className="mt-6 font-bold text-lg">
+        Time Left: <span className="text-yellow-400">{timeLeft}s</span>
       </p>
     </div>
   );

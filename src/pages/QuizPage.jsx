@@ -1,4 +1,3 @@
-// src/pages/QuizPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -96,7 +95,7 @@ export default function QuizPage({ questions, setScore }) {
         </button>
         {currentIndex < questions.length - 1 ? (
           <button
-            onClick={nextQuestion}
+            onClick={nextQuestion} //EzyTech
             className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500"
           >
             Next

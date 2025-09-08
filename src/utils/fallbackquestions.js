@@ -1,4 +1,3 @@
-// src/utils/fallbackQuestions.js
 const LS_KEY = "fallback_used_ids_v2";
 
 function loadUsedIds() {
@@ -35,7 +34,7 @@ export async function getFallbackQuestions(n = 10, category = null) {
     // Filter by category if provided
     let filtered = category ? all.filter((q) => q.category === category) : all;
 
-    const used = loadUsedIds();
+    const used = loadUsedIds(); // EzyTech
     let available = filtered.filter((q) => !used.has(q.id));
 
     // If we don’t have enough questions left, reset

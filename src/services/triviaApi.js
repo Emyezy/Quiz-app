@@ -1,4 +1,3 @@
-// src/services/triviaApi.js
 export const fetchTriviaQuestions = async (amount = 100) => {
   try {
     const res = await fetch(

@@ -1,4 +1,3 @@
-// src/pages/ResultsPage.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +22,7 @@ export default function ResultsPage({ score, total, restartQuiz }) {
           onClick={handleRestart}
           className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 font-semibold"
         >
-          Restart Quiz
+          Restart Quiz 
         </button>
       </div>
     </div>

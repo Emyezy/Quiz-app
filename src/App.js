@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomeScreen from "./pages/HomeScreen";
@@ -46,7 +45,7 @@ function App() {
       } catch (err) {
         console.error("Error loading fallback:", err);
       } finally {
-        setLoading(false);
+        setLoading(false); // EzyTech
       }
     }
 

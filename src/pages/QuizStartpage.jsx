@@ -15,7 +15,7 @@ export default function QuizStartPage({ onStart }) {
       >
         <option value="">Random (any category)</option>
         <option value="General Knowledge">General Knowledge</option>
-        <option value="Science">Science</option>
+        <option value="Science">Science</option> 
         <option value="Nigeria History">Nigeria History</option>
       </select>
 

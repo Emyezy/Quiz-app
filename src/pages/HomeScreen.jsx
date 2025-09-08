@@ -1,4 +1,3 @@
-// src/pages/HomeScreen.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,7 +21,7 @@ export default function HomeScreen({ startQuiz, loading }) {
         </p>
         <button
           onClick={handleStart}
-          disabled={loading}
+          disabled={loading} //EzyTech
           className="px-6 py-3 rounded-lg bg-green-600 hover:bg-green-500 font-semibold disabled:opacity-50"
         >
           {loading ? "Loading..." : "Start Quiz"}

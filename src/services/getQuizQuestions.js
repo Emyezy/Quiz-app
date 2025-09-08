@@ -1,4 +1,3 @@
-// src/services/getQuizQuestions.js
 import { getFallbackQuestions } from "./utils/fallbackQuestions";
 
 export async function getQuizQuestions({
@@ -30,7 +29,7 @@ export async function getQuizQuestions({
     );
     clearTimeout(timeout);
 
-    if (!res.ok) throw new Error("OTDB error");
+    if (!res.ok) throw new Error("OTDB error"); // EzyTech
     const data = await res.json();
     if (
       data.response_code !== 0 ||
